@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kidpla - Zaplanuj Wymarzone Urodziny</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>🎈 Kidpla <small>Panel Planowania Imprez</small></h1>
+        <div id="auth-info">Nie jesteś zalogowany.</div>
+    </header>
+
+    <div id="login-section" class="card">
+        <h2>🔒 Zaloguj / Zarejestruj się</h2>
+        <form id="login-form">
+            <input type="email" id="login-email" required placeholder="E-mail">
+            <input type="password" id="login-password" required placeholder="Hasło">
+            <select id="login-role">
+                <option value="klient">Rodzic (Szukam usług)</option>
+                <option value="wlasciciel">Usługodawca (Oferuję usługi)</option>
+            </select>
+            <div class="btn-group">
+                <button type="submit" id="btn-login" class="btn-blue">Zaloguj</button>
+                <button type="button" id="btn-register" class="btn-green">Zarejestruj nowe konto</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="owner-section" class="hidden">
+        <button class="btn-red logout-btn">Wyloguj się</button>
+        <div class="card owner-card">
+            <h2>➕ Dodaj swoją usługę na platformę</h2>
+            <form id="add-service-form">
+                <input type="text" id="s-name" required placeholder="Nazwa (np. Animator Steve, Tort Zygzak)">
+                <select id="s-category">
+                    <option value="animator">Animator / Atrakcje</option>
+                    <option value="cukiernia">Cukiernia / Torty</option>
+                    <option value="sala">Sala Zabaw</option>
+                </select>
+                <input type="number" id="s-price" required placeholder="Cena (zł)">
+                <input type="text" id="s-features" placeholder="Cechy (po przecinku, np. dojazd, własny sprzęt)">
+                <button type="submit" class="btn-green">Dodaj do bazy Kidpli</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="client-section" class="hidden">
+         <button class="btn-red logout-btn">Wyloguj się</button>
+         
+         <div class="app-layout">
+             <div class="services-column">
+                 <h2>🎨 Wybierz usługi na imprezę</h2>
+                 <div class="filters">
+                     <button onclick="fetchServices('')">Wszystko</button>
+                     <button onclick="fetchServices('animator')">🎭 Animatorzy</button>
+                     <button onclick="fetchServices('cukiernia')">🎂 Torty</button>
+                     <button onclick="fetchServices('sala')">🎪 Sale Zabaw</button>
+                 </div>
+                 <div id="services-list"><i>Ładowanie bazy...</i></div>
+             </div>
+
+             <div class="cart-column card">
+                 <h2>🛒 Twój Koszyk Imprezowy</h2>
+                 <div id="cart-items">
+                     <i>Koszyk jest pusty. Kliknij usługi obok, aby dodać.</i>
+                 </div>
+                 
+                 <hr>
+                 <h3>Szczegóły Imprezy:</h3>
+                 <label>Data imprezy:</label>
+                 <input type="date" id="event-date">
+                 <label>Godzina:</label>
+                 <input type="time" id="event-time">
+                 <label>
+                    <input type="checkbox" id="event-venue"> Mam już własną salę/miejsce
+                 </label>
+                 
+                 <button id="checkout-btn" class="btn-green disabled" onclick="checkout()" disabled>Zarezerwuj Imprezę</button>
+             </div>
+         </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
