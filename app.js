@@ -203,6 +203,9 @@ window.checkout = async function() {
 // --- ZLECENIA WŁAŚCICIELA ---
 async function fetchProviderOrders() {
     const token = localStorage.getItem('kidpla_token');
+    const list = document.getElementById('provider-orders-list');
+    list.innerHTML = '<i>Sprawdzam zlecenia...</i>'; // Komunikat tymczasowy
+    
     try {
         const res = await fetch(`${API_URL}/provider/orders`, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -210,10 +213,9 @@ async function fetchProviderOrders() {
         
         if (res.ok) {
             const orders = await res.json();
-            const list = document.getElementById('provider-orders-list');
             
             if (orders.length === 0) {
-                list.innerHTML = '<i>Brak zleceń. Czekaj na klientów!</i>';
+                list.innerHTML = '<b>Brak zleceń. Czekaj na klientów!</b>'; // <--- TUTAJ JEST TWÓJ NAPIS "BRAK"
                 return;
             }
             
@@ -265,23 +267,26 @@ window.updateOrderStatus = async function(itemId, newStatus) {
 
 async function fetchClientEvents() {
     const token = localStorage.getItem('kidpla_token');
-    const res = await fetch(`${API_URL}/client/events`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
+    const list = document.getElementById('client-events-list');
+    list.innerHTML = '<i>Pobieram historię...</i>'; // Komunikat tymczasowy
     
-    if (res.ok) {
-        const events = await res.json();
-        const list = document.getElementById('client-events-list');
+    try {
+        const res = await fetch(`${API_URL}/client/events`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
         
-        if (events.length === 0) {
-            list.innerHTML = '<i>Nie masz jeszcze żadnych rezerwacji. Zaplanuj coś!</i>';
-            return;
-        }
-        
-        let html = '';
-        events.forEach(ev => {
-            html += `
-            <div class="card" style="border: 1px solid #ddd; background: #fff;">
+        if (res.ok) {
+            const events = await res.json();
+            
+            if (events.length === 0) {
+                list.innerHTML = '<b>Nie masz jeszcze żadnych rezerwacji. Zaplanuj coś!</b>'; // <--- TUTAJ JEST "BRAK" DLA RODZICA
+                return;
+            }
+            
+            let html = '';
+            events.forEach(ev => {
+                html += `
+            <div class="card" style="border: 1px solid #ddd; background: #fff; margin-bottom: 15px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <h3>Impreza #${ev.event_id} - ${ev.date} o ${ev.time}</h3>
                     <span>${ev.has_own_venue ? '🏠 Miejsce własne' : '🎪 Rezerwacja sali'}</span>
@@ -299,8 +304,13 @@ async function fetchClientEvents() {
                 </div>
             </div>
             `;
-        });
-        list.innerHTML = html;
+            });
+            list.innerHTML = html;
+        } else {
+            list.innerHTML = '<b>Błąd ładowania historii. Spróbuj ponownie.</b>';
+        }
+    } catch (e) {
+        list.innerHTML = '<b>Błąd łączenia z serwerem. Spróbuj odświeżyć.</b>';
     }
 }
 
