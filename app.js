@@ -115,6 +115,9 @@ window.fetchServices = async function(category = '') {
                 <div class="service-info">
                     <h3>${s.name} <small>(${s.category})</small></h3>
                     <p>Dodatki: ${s.features.join(', ') || 'Brak'}</p>
+                    <div style="margin-top: 8px;">
+                        ${renderBalloons(s.rating)} <small style="color: #888;">(${s.reviews_count} opinii)</small>
+                    </div>
                 </div>
                 <div style="display:flex; align-items:center;">
                     <div class="price-tag">${s.price || 0} zł</div>
@@ -294,10 +297,16 @@ async function fetchClientEvents() {
                 <div style="margin-top:10px;">
                     ${ev.items.map(item => {
                         let statusColor = item.status === 'oczekujace' ? '#ffc107' : (item.status === 'zaakceptowane' ? '#20c997' : '#ff6b6b');
+                        let rateBtn = item.status === 'zaakceptowane' 
+                            ? `<button class="btn-blue" style="padding: 2px 8px; font-size: 0.8em; margin-left: 10px;" onclick="openReviewModal(${item.service_id}, '${item.service_name}')">🎈 Oceń</button>` 
+                            : '';
                         return `
-                        <div style="display:flex; justify-content:space-between; padding: 5px 0; border-bottom: 1px solid #eee;">
+                        <div style="display:flex; justify-content:space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #eee;">
                             <span>${item.service_name}</span>
-                            <b style="color:${statusColor}">${item.status.toUpperCase()}</b>
+                            <div>
+                                <b style="color:${statusColor}">${item.status.toUpperCase()}</b>
+                                ${rateBtn}
+                            </div>
                         </div>
                         `;
                     }).join('')}
@@ -313,6 +322,61 @@ async function fetchClientEvents() {
         list.innerHTML = '<b>Błąd łączenia z serwerem. Spróbuj odświeżyć.</b>';
     }
 }
+
+// --- SYSTEM BALONIKÓW KIDPLI ---
+
+function renderBalloons(rating) {
+    if (rating === 0) return '<span style="color:#aaa; font-size: 0.9em;">Brak baloników 🎈</span>';
+    
+    let html = '';
+    let roundedRating = Math.round(rating);
+    
+    for(let i = 1; i <= 5; i++) {
+        if(i <= roundedRating) {
+            html += '<span style="opacity: 1; font-size: 1.3em;">🎈</span>';
+        } else {
+            html += '<span style="opacity: 0.2; filter: grayscale(100%); font-size: 1.3em;">🎈</span>';
+        }
+    }
+    return `${html} <b style="margin-left: 5px;">${rating.toFixed(1)}</b>`;
+}
+
+window.openReviewModal = function(serviceId, serviceName) {
+    document.getElementById('review-service-id').value = serviceId;
+    document.getElementById('review-service-name').innerText = serviceName;
+    document.getElementById('review-modal').style.display = 'flex';
+}
+
+window.closeReviewModal = function() {
+    document.getElementById('review-modal').style.display = 'none';
+    document.getElementById('review-form').reset();
+}
+
+document.getElementById('review-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const token = localStorage.getItem('kidpla_token');
+    
+    const payload = {
+        service_id: document.getElementById('review-service-id').value,
+        rating: document.getElementById('review-rating').value,
+        comment: document.getElementById('review-comment').value
+    };
+
+    const res = await fetch(`${API_URL}/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(payload)
+    });
+
+    if(res.ok) {
+        alert("🎈 Dziękujemy za opinię! Baloniki zostały dodane.");
+        closeReviewModal();
+        fetchServices('');
+    } else {
+        const err = await res.json();
+        alert("Błąd: " + err.error);
+    }
+});
 
 // Start
 checkAuth();

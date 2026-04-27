@@ -94,6 +94,31 @@
          </div>
     </div>
 
+    <div id="review-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000;">
+        <div class="card" style="width: 350px; background: white; text-align: center;">
+            <h2 style="margin-top:0;">Oceń usługę</h2>
+            <h3 id="review-service-name" style="color: #4dabf7; margin-bottom: 20px;"></h3>
+            
+            <form id="review-form">
+                <input type="hidden" id="review-service-id">
+                <label>Twoja ocena (1-5 baloników):</label>
+                <select id="review-rating" required style="font-size: 1.2em; text-align: center; margin-top: 10px;">
+                    <option value="5">🎈🎈🎈🎈🎈 (5/5)</option>
+                    <option value="4">🎈🎈🎈🎈 (4/5)</option>
+                    <option value="3">🎈🎈🎈 (3/5)</option>
+                    <option value="2">🎈🎈 (2/5)</option>
+                    <option value="1">🎈 (1/5)</option>
+                </select>
+                <textarea id="review-comment" placeholder="Napisz, jak podobała się impreza..." rows="3" style="width:100%; margin-top:15px;"></textarea>
+                
+                <div class="btn-group" style="margin-top:20px;">
+                    <button type="submit" class="btn-green">Nadmuchiwanie! (Wyślij)</button>
+                    <button type="button" class="btn-red" onclick="closeReviewModal()">Anuluj</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <script src="app.js"></script>
 </body>
 </html>
