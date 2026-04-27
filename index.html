@@ -30,7 +30,8 @@
 
     <div id="owner-section" class="hidden">
         <button class="btn-red logout-btn">Wyloguj się</button>
-        <div class="card owner-card">
+        
+        <div class="card owner-card" style="margin-top: 15px;">
             <h2>➕ Dodaj swoją usługę na platformę</h2>
             <form id="add-service-form">
                 <input type="text" id="s-name" required placeholder="Nazwa (np. Animator Steve, Tort Zygzak)">
@@ -45,15 +46,18 @@
             </form>
         </div>
 
-    <div class="card owner-card" style="margin-top: 20px;">
-        <h2>📋 Wpływające Zlecenia na Twoje Usługi</h2>
-        <div id="provider-orders-list">
-            <i>Ładowanie zleceń...</i>
+        <div class="card owner-card" style="margin-top: 20px;">
+            <h2>📋 Wpływające Zlecenia na Twoje Usługi</h2>
+            <div id="provider-orders-list">
+                <i>Ładowanie zleceń...</i>
+            </div>
         </div>
     </div>
+
+    <div id="client-section" class="hidden">
          <button class="btn-red logout-btn">Wyloguj się</button>
          
-         <div class="app-layout">
+         <div class="app-layout" style="margin-top: 15px;">
              <div class="services-column">
                  <h2>🎨 Wybierz usługi na imprezę</h2>
                  <div class="filters">
@@ -70,7 +74,6 @@
                  <div id="cart-items">
                      <i>Koszyk jest pusty. Kliknij usługi obok, aby dodać.</i>
                  </div>
-                 
                  <hr>
                  <h3>Szczegóły Imprezy:</h3>
                  <label>Data imprezy:</label>
@@ -80,7 +83,6 @@
                  <label>
                     <input type="checkbox" id="event-venue"> Mam już własną salę/miejsce
                  </label>
-                 
                  <button id="checkout-btn" class="btn-green disabled" onclick="checkout()" disabled>Zarezerwuj Imprezę</button>
              </div>
          </div>

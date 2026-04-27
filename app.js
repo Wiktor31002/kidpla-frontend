@@ -1,8 +1,7 @@
-const API_URL = 'https://kidpla-api-backend.onrender.com';
-// STAN APLIKACJI (Koszyk)
+const API_URL = 'https://kidpla-api-backend.onrender.com'; 
+
 let cart = []; 
 
-// 1. SPRAWDZANIE ZALOGOWANIA
 function checkAuth() {
     const token = localStorage.getItem('kidpla_token');
     const role = localStorage.getItem('kidpla_role');
@@ -14,11 +13,11 @@ function checkAuth() {
         if(role === 'wlasciciel' || role === 'admin') {
             document.getElementById('owner-section').classList.remove('hidden');
             document.getElementById('client-section').classList.add('hidden');
-            fetchProviderOrders(); // <-- DODAJ TO!
+            fetchProviderOrders(); 
         } else {
             document.getElementById('owner-section').classList.add('hidden');
             document.getElementById('client-section').classList.remove('hidden');
-            fetchServices(''); // Ładujemy usługi po zalogowaniu klienta
+            fetchServices(''); 
         }
     } else {
         document.getElementById('login-section').classList.remove('hidden');
@@ -28,7 +27,6 @@ function checkAuth() {
     }
 }
 
-// 2. REJESTRACJA
 document.getElementById('btn-register').addEventListener('click', async function() {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
@@ -45,7 +43,6 @@ document.getElementById('btn-register').addEventListener('click', async function
     alert(data.message || data.error);
 });
 
-// 3. LOGOWANIE
 document.getElementById('login-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
@@ -67,18 +64,16 @@ document.getElementById('login-form').addEventListener('submit', async function(
     }
 });
 
-// 4. WYLOGOWANIE
 document.querySelectorAll('.logout-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         localStorage.removeItem('kidpla_token');
         localStorage.removeItem('kidpla_role');
-        cart = []; // Czyścimy koszyk przy wylogowaniu!
+        cart = []; 
         updateCartUI();
         checkAuth();
     });
 });
 
-// 5. DODAWANIE USŁUGI (Właściciel)
 document.getElementById('add-service-form').addEventListener('submit', async function(e) {
     e.preventDefault(); 
     const token = localStorage.getItem('kidpla_token');
@@ -105,7 +100,6 @@ document.getElementById('add-service-form').addEventListener('submit', async fun
     }
 });
 
-// 6. POBIERANIE USŁUG (Klient)
 window.fetchServices = async function(category = '') {
     const url = category ? `${API_URL}/?category=${category}` : `${API_URL}/`;
     const res = await fetch(url);
@@ -130,11 +124,8 @@ window.fetchServices = async function(category = '') {
     });
 }
 
-// 7. SYSTEM KOSZYKA
 window.addToCart = function(id, name, price) {
-    if(cart.find(item => item.id === id)) {
-        return alert("Ta usługa jest już w Twoim koszyku!");
-    }
+    if(cart.find(item => item.id === id)) return alert("Ta usługa jest już w koszyku!");
     cart.push({ id, name, price });
     updateCartUI();
 }
@@ -177,7 +168,6 @@ function updateCartUI() {
     checkoutBtn.disabled = false;
 }
 
-// 8. FINALIZACJA IMPREZY (Wysłanie do Pythona)
 window.checkout = async function() {
     const date = document.getElementById('event-date').value;
     const time = document.getElementById('event-time').value;
@@ -186,15 +176,8 @@ window.checkout = async function() {
 
     if(!date || !time) return alert("Musisz wybrać datę i godzinę imprezy!");
 
-    // Wyciągamy same ID usług z koszyka
     const serviceIds = cart.map(item => item.id);
-
-    const payload = {
-        date: date,
-        time: time,
-        has_own_venue: hasOwnVenue,
-        service_ids: serviceIds
-    };
+    const payload = { date: date, time: time, has_own_venue: hasOwnVenue, service_ids: serviceIds };
 
     try {
         const res = await fetch(`${API_URL}/event`, {
@@ -205,7 +188,7 @@ window.checkout = async function() {
 
         if (res.ok) {
             alert("🎉 ZAMÓWIENIE PRZYJĘTE! Usługodawcy otrzymali powiadomienia.");
-            cart = []; // Czyścimy koszyk
+            cart = []; 
             updateCartUI();
         } else {
             const err = await res.json();
@@ -216,45 +199,47 @@ window.checkout = async function() {
     }
 }
 
-// --- PANEL ZLECEŃ WŁAŚCICIELA ---
-
+// --- ZLECENIA WŁAŚCICIELA ---
 async function fetchProviderOrders() {
     const token = localStorage.getItem('kidpla_token');
-    const res = await fetch(`${API_URL}/provider/orders`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
-    
-    if (res.ok) {
-        const orders = await res.json();
-        const list = document.getElementById('provider-orders-list');
-        
-        if (orders.length === 0) {
-            list.innerHTML = '<i>Brak zleceń. Czekaj na klientów!</i>';
-            return;
-        }
-        
-        let html = '';
-        orders.forEach(o => {
-            // Kolorujemy pasek w zależności od statusu
-            let statusColor = o.status === 'oczekujace' ? '#ffc107' : (o.status === 'zaakceptowane' ? '#20c997' : '#ff6b6b');
-            
-            html += `
-            <div class="service-card" style="border-left: 5px solid ${statusColor};">
-                <div class="service-info">
-                    <h3>Usługa: ${o.service_name}</h3>
-                    <p>📅 <b>${o.date}</b> o ⏰ <b>${o.time}</b></p>
-                    <p>Status: <b style="color:${statusColor}">${o.status.toUpperCase()}</b></p>
-                </div>
-                ${o.status === 'oczekujace' ? `
-                <div class="btn-group">
-                    <button class="btn-green" onclick="updateOrderStatus(${o.item_id}, 'zaakceptowane')">Akceptuj</button>
-                    <button class="btn-red" onclick="updateOrderStatus(${o.item_id}, 'odrzucone')">Odrzuć</button>
-                </div>
-                ` : ''}
-            </div>
-            `;
+    try {
+        const res = await fetch(`${API_URL}/provider/orders`, {
+            headers: { 'Authorization': `Bearer ${token}` }
         });
-        list.innerHTML = html;
+        
+        if (res.ok) {
+            const orders = await res.json();
+            const list = document.getElementById('provider-orders-list');
+            
+            if (orders.length === 0) {
+                list.innerHTML = '<i>Brak zleceń. Czekaj na klientów!</i>';
+                return;
+            }
+            
+            let html = '';
+            orders.forEach(o => {
+                let statusColor = o.status === 'oczekujace' ? '#ffc107' : (o.status === 'zaakceptowane' ? '#20c997' : '#ff6b6b');
+                
+                html += `
+                <div class="service-card" style="border-left: 5px solid ${statusColor};">
+                    <div class="service-info">
+                        <h3>Usługa: ${o.service_name}</h3>
+                        <p>📅 <b>${o.date}</b> o ⏰ <b>${o.time}</b></p>
+                        <p>Status: <b style="color:${statusColor}">${o.status.toUpperCase()}</b></p>
+                    </div>
+                    ${o.status === 'oczekujace' ? `
+                    <div class="btn-group">
+                        <button class="btn-green" onclick="updateOrderStatus(${o.item_id}, 'zaakceptowane')">Akceptuj</button>
+                        <button class="btn-red" onclick="updateOrderStatus(${o.item_id}, 'odrzucone')">Odrzuć</button>
+                    </div>
+                    ` : ''}
+                </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+    } catch(e) {
+        document.getElementById('provider-orders-list').innerHTML = "Błąd łączenia z serwerem. Odśwież stronę.";
     }
 }
 
@@ -271,7 +256,7 @@ window.updateOrderStatus = async function(itemId, newStatus) {
     
     if (res.ok) {
         alert(`Zlecenie zostało: ${newStatus}!`);
-        fetchProviderOrders(); // Odświeżamy listę, żeby status się zmienił
+        fetchProviderOrders(); 
     }
 }
 
