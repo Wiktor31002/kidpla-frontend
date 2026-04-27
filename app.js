@@ -18,6 +18,7 @@ function checkAuth() {
             document.getElementById('owner-section').classList.add('hidden');
             document.getElementById('client-section').classList.remove('hidden');
             fetchServices(''); 
+            fetchClientEvents(); // <-- DODAJ TO!
         }
     } else {
         document.getElementById('login-section').classList.remove('hidden');
@@ -257,6 +258,49 @@ window.updateOrderStatus = async function(itemId, newStatus) {
     if (res.ok) {
         alert(`Zlecenie zostało: ${newStatus}!`);
         fetchProviderOrders(); 
+    }
+}
+
+// --- PANEL HISTORII KLIENTA ---
+
+async function fetchClientEvents() {
+    const token = localStorage.getItem('kidpla_token');
+    const res = await fetch(`${API_URL}/client/events`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (res.ok) {
+        const events = await res.json();
+        const list = document.getElementById('client-events-list');
+        
+        if (events.length === 0) {
+            list.innerHTML = '<i>Nie masz jeszcze żadnych rezerwacji. Zaplanuj coś!</i>';
+            return;
+        }
+        
+        let html = '';
+        events.forEach(ev => {
+            html += `
+            <div class="card" style="border: 1px solid #ddd; background: #fff;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>Impreza #${ev.event_id} - ${ev.date} o ${ev.time}</h3>
+                    <span>${ev.has_own_venue ? '🏠 Miejsce własne' : '🎪 Rezerwacja sali'}</span>
+                </div>
+                <div style="margin-top:10px;">
+                    ${ev.items.map(item => {
+                        let statusColor = item.status === 'oczekujace' ? '#ffc107' : (item.status === 'zaakceptowane' ? '#20c997' : '#ff6b6b');
+                        return `
+                        <div style="display:flex; justify-content:space-between; padding: 5px 0; border-bottom: 1px solid #eee;">
+                            <span>${item.service_name}</span>
+                            <b style="color:${statusColor}">${item.status.toUpperCase()}</b>
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+            `;
+        });
+        list.innerHTML = html;
     }
 }
 
