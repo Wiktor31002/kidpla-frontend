@@ -14,6 +14,7 @@ function checkAuth() {
         if(role === 'wlasciciel' || role === 'admin') {
             document.getElementById('owner-section').classList.remove('hidden');
             document.getElementById('client-section').classList.add('hidden');
+            fetchProviderOrders(); // <-- DODAJ TO!
         } else {
             document.getElementById('owner-section').classList.add('hidden');
             document.getElementById('client-section').classList.remove('hidden');
@@ -212,6 +213,65 @@ window.checkout = async function() {
         }
     } catch(e) {
         alert("Błąd połączenia z serwerem.");
+    }
+}
+
+// --- PANEL ZLECEŃ WŁAŚCICIELA ---
+
+async function fetchProviderOrders() {
+    const token = localStorage.getItem('kidpla_token');
+    const res = await fetch(`${API_URL}/provider/orders`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (res.ok) {
+        const orders = await res.json();
+        const list = document.getElementById('provider-orders-list');
+        
+        if (orders.length === 0) {
+            list.innerHTML = '<i>Brak zleceń. Czekaj na klientów!</i>';
+            return;
+        }
+        
+        let html = '';
+        orders.forEach(o => {
+            // Kolorujemy pasek w zależności od statusu
+            let statusColor = o.status === 'oczekujace' ? '#ffc107' : (o.status === 'zaakceptowane' ? '#20c997' : '#ff6b6b');
+            
+            html += `
+            <div class="service-card" style="border-left: 5px solid ${statusColor};">
+                <div class="service-info">
+                    <h3>Usługa: ${o.service_name}</h3>
+                    <p>📅 <b>${o.date}</b> o ⏰ <b>${o.time}</b></p>
+                    <p>Status: <b style="color:${statusColor}">${o.status.toUpperCase()}</b></p>
+                </div>
+                ${o.status === 'oczekujace' ? `
+                <div class="btn-group">
+                    <button class="btn-green" onclick="updateOrderStatus(${o.item_id}, 'zaakceptowane')">Akceptuj</button>
+                    <button class="btn-red" onclick="updateOrderStatus(${o.item_id}, 'odrzucone')">Odrzuć</button>
+                </div>
+                ` : ''}
+            </div>
+            `;
+        });
+        list.innerHTML = html;
+    }
+}
+
+window.updateOrderStatus = async function(itemId, newStatus) {
+    const token = localStorage.getItem('kidpla_token');
+    const res = await fetch(`${API_URL}/provider/orders/${itemId}`, {
+        method: 'PUT',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+    });
+    
+    if (res.ok) {
+        alert(`Zlecenie zostało: ${newStatus}!`);
+        fetchProviderOrders(); // Odświeżamy listę, żeby status się zmienił
     }
 }
 
